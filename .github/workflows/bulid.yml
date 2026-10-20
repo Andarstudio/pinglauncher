@@ -1,0 +1,38 @@
+name: Build and Test Ping Launcher
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore PingLauncher.sln
+
+    - name: Build Solution
+      run: dotnet build PingLauncher.sln -c Release --no-restore
+
+    - name: Run Tests
+      run: dotnet test PingLauncher.sln -c Release --no-build --verbosity normal
+
+    - name: Publish Windows x64 App
+      run: dotnet publish src/PingLauncher.App/PingLauncher.App.csproj -c Release -r win-x64 --self-contained true -o publish/win-x64
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: PingLauncher-Windows-x64
+        path: publish/win-x64/
