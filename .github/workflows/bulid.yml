@@ -1,4 +1,4 @@
-name: Build and Test Ping Launcher
+name: Extract ZIP and Build Ping Launcher
 
 on:
   push:
@@ -7,12 +7,25 @@ on:
     branches: [ main, master ]
 
 jobs:
-  build:
+  extract-and-build:
     runs-on: windows-latest
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
+
+    - name: Extract Project ZIP Archive
+      shell: pwsh
+      run: |
+        $zipFile = "PingLauncher-Complete.zip"
+        $extractDir = "."
+        if (Test-Path $zipFile) {
+            Write-Host "Extracting $zipFile to $extractDir..."
+            Expand-Archive -Path $zipFile -DestinationPath $extractDir -Force
+            Write-Host "Extraction completed successfully."
+        } else {
+            Write-Warning "ZIP file $zipFile not found. Assuming files are already checked out directly."
+        }
 
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
@@ -36,3 +49,4 @@ jobs:
       with:
         name: PingLauncher-Windows-x64
         path: publish/win-x64/
+        
